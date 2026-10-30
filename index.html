@@ -1,0 +1,679 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+:root { padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); }
+img { max-width: 100%; }
+[hidden] { display: none !important; }
+</style>
+<title>廿四节气签</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="摇三下,抽一支今天的节气签。">
+<style>
+/* Layout: 一只青花签筒立在月白釉色上;出签后整页换成该节气的颜色,签纸竖排,右起左读。 */
+:root {
+  color-scheme: light;
+  --moon: #E9F0F3;
+  --glaze: #F8FBFC;
+  --cobalt: #1E3F8A;
+  --cobalt-deep: #14295E;
+  --bamboo: #D9BE85;
+  --bamboo-edge: #AE8F52;
+  --cinnabar: #BE3528;
+  --ink: #1A2740;
+  --mute: #56657E;
+  --term: #1E3F8A;
+  --term-pale: #E9F0F3;
+  --serif: "Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", "SimSun", serif;
+  --kai: "Kaiti SC", "STKaiti", "KaiTi", "BiauKai", "Songti SC", "STSong", "Noto Serif CJK SC", "SimSun", serif;
+  --sans: -apple-system, "PingFang SC", "Noto Sans CJK SC", "Microsoft YaHei", sans-serif;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--term-pale);
+  color: var(--ink);
+  font: 16px/1.7 var(--sans);
+  transition: background .6s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+#app {
+  max-width: 440px;
+  margin: 0 auto;
+  padding-block: 20px 28px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+}
+.scene { display: grid; gap: 18px; }
+
+/* 求签 */
+.invite { margin: 0; color: var(--cinnabar); font-family: var(--serif); font-size: 17px; text-align: center; }
+.mast { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 8px; }
+.tube-wrap {
+  border: 0; padding: 0; margin: 0; background: none; cursor: pointer;
+  justify-self: center; width: min(50vw, 200px); max-width: 100%;
+  -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; touch-action: manipulation;
+}
+.tube-wrap:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 4px; }
+.tube { display: block; width: 100%; height: auto; overflow: visible; }
+.tube-wrap.shaking .tube { animation: rattle .46s ease-in-out; transform-origin: 50% 92%; }
+.tube-wrap.shaking .stick { animation: hop .46s ease-in-out; animation-delay: calc(var(--i) * 18ms); }
+.stick { transform-box: fill-box; transform-origin: 50% 100%; }
+#chosen { transition: transform .85s cubic-bezier(.2, .8, .25, 1); }
+.tube-wrap.drawn #chosen { transform: translateY(-96px); }
+@keyframes rattle {
+  0%, 100% { transform: rotate(0); }
+  20% { transform: rotate(-7deg) translateY(-3px); }
+  45% { transform: rotate(6deg) translateY(1px); }
+  70% { transform: rotate(-4deg) translateY(-2px); }
+}
+@keyframes hop { 0%, 100% { transform: translateY(0); } 40% { transform: translateY(-14px); } 70% { transform: translateY(4px); } }
+
+.title { display: flex; flex-direction: row-reverse; gap: 8px; align-self: start; }
+.title h1 { margin: 0; writing-mode: vertical-rl; color: var(--cobalt-deep); font: 700 44px/1.1 var(--kai); letter-spacing: .1em; }
+.title p { margin: 0; writing-mode: vertical-rl; color: var(--mute); font-family: var(--serif); font-size: 14px; letter-spacing: .24em; }
+
+.fields { display: grid; gap: 14px; }
+.field { display: grid; gap: 6px; margin: 0; padding: 0; border: 0; min-width: 0; }
+.field > label, .field > legend { padding: 0; color: var(--mute); font-size: 14px; }
+#name {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--cobalt); border-radius: 3px;
+  background: var(--glaze); color: var(--ink); font: 17px var(--serif);
+}
+#name:focus-visible { outline: 2px solid var(--cobalt); outline-offset: 1px; }
+#name::placeholder { color: var(--mute); }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+.chip span {
+  display: block; padding: 6px 12px; border: 1px solid var(--cobalt); border-radius: 3px;
+  background: var(--glaze); color: var(--cobalt); font-size: 15px; cursor: pointer;
+}
+.chip input:checked + span { background: var(--cobalt); color: var(--glaze); }
+.chip input:focus-visible + span { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+
+.btn {
+  display: block; width: 100%; min-height: 48px; padding: 10px 16px;
+  border: 1px solid var(--term); border-radius: 3px; background: var(--glaze); color: var(--term);
+  font: 600 17px var(--serif); letter-spacing: .08em; cursor: pointer; touch-action: manipulation;
+}
+.btn.primary { background: var(--term); color: var(--glaze); }
+.btn:focus-visible { outline: 2px solid var(--cinnabar); outline-offset: 2px; }
+#shake { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.dots { display: inline-flex; gap: 6px; }
+.dots i { width: 9px; height: 9px; border: 1px solid currentColor; border-radius: 50%; }
+.dots i.on { background: currentColor; }
+.fine { margin: 0; color: var(--mute); font-size: 13px; line-height: 1.6; text-align: center; }
+
+/* 签纸 */
+.slip {
+  display: grid; gap: 14px; padding: 16px; background: var(--glaze); color: var(--ink);
+  outline: 1px solid var(--term); outline-offset: -6px; border: 2px solid var(--term);
+}
+.slip.reveal { animation: unroll .7s cubic-bezier(.2, .8, .25, 1) both; }
+@keyframes unroll { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
+.slip-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 6px 0; }
+.slip-head b { color: var(--term); font: 700 19px var(--serif); letter-spacing: .14em; }
+.seal {
+  display: grid; place-items: center; width: 44px; height: 44px; flex: none; padding: 2px;
+  border-radius: 3px; background: var(--cinnabar); color: var(--glaze);
+  font: 700 18px/1.05 var(--kai); text-align: center; transform: rotate(-4deg);
+}
+.seal.wide { writing-mode: vertical-rl; letter-spacing: 0; }
+.verse { display: flex; flex-direction: row-reverse; justify-content: space-between; gap: 10px; padding: 4px 6px; }
+.term { margin: 0; writing-mode: vertical-rl; color: var(--term); font: 700 54px/1.1 var(--kai); letter-spacing: .12em; }
+.poem { margin: 0; display: flex; flex-direction: row-reverse; gap: 12px; }
+.poem p { margin: 0; writing-mode: vertical-rl; font: 400 25px/1.2 var(--kai); letter-spacing: .1em; }
+.slip.reveal .poem p { animation: ink .6s ease both; animation-delay: calc(.45s + var(--i) * .2s); }
+@keyframes ink { from { opacity: .08; } to { opacity: 1; } }
+.who { margin: 0; display: flex; flex-direction: row-reverse; gap: 4px; color: var(--mute); font-family: var(--serif); font-size: 14px; line-height: 1.25; }
+.who span { writing-mode: vertical-rl; letter-spacing: .08em; }
+.gloss { margin: 0; padding: 12px 6px 0; border-top: 1px solid var(--term); font: 400 18px/1.75 var(--serif); }
+.reads { display: grid; gap: 8px; margin: 0; padding: 0 6px; }
+.read { display: grid; grid-template-columns: 3em minmax(0, 1fr); gap: 8px; margin: 0; }
+.read dt { color: var(--term); font-weight: 600; }
+.read dd { margin: 0; min-width: 0; }
+.read.asked { padding: 10px; background: var(--term-pale); }
+.omens { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; padding: 0 6px; }
+.omen { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; align-items: start; }
+.omen b { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; color: var(--glaze); font: 700 15px var(--serif); }
+.omen.yi b { background: var(--term); }
+.omen.ji b { background: var(--cinnabar); }
+.omen ul { margin: 0; padding: 0; list-style: none; font-size: 15px; line-height: 1.5; }
+.luck { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 10px 0 2px; border-top: 1px solid var(--term); text-align: center; }
+.luck div { min-width: 0; }
+.luck dt { color: var(--mute); font-size: 12px; }
+.luck dd { margin: 0; font: 600 17px/1.4 var(--serif); }
+.luck small { display: block; color: var(--mute); font: 12px/1.3 var(--sans); }
+.swatch { display: inline-block; width: 11px; height: 11px; margin-right: 3px; border-radius: 2px; background: var(--term); }
+.actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.actions .primary { grid-column: 1 / -1; }
+#pass[hidden] + #again { grid-column: 1 / -1; }
+#linkbox { margin: 0; padding: 10px; background: var(--glaze); font-size: 14px; word-break: break-all; }
+
+/* 存图 */
+#sheet {
+  position: fixed; inset: 0; z-index: 20; overflow: auto; display: grid; justify-items: center; align-content: center; gap: 12px;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px));
+  background: var(--cobalt-deep);
+}
+#sheet img { display: block; width: auto; max-width: 100%; max-height: 74vh; }
+#sheet p { margin: 0; color: var(--glaze); font-size: 15px; text-align: center; }
+#sheet .btn { max-width: 200px; border-color: var(--glaze); background: none; color: var(--glaze); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+</style>
+</head>
+<body>
+
+<main id="app">
+  <section id="ask" class="scene" aria-label="求签">
+    <p id="invite" class="invite" hidden></p>
+    <div class="mast">
+      <button id="tube" class="tube-wrap" type="button" aria-label="摇动签筒">
+        <svg class="tube" viewBox="0 -76 220 416" aria-hidden="true">
+          <defs>
+            <pattern id="wave" width="32" height="32" patternUnits="userSpaceOnUse">
+              <g fill="none" stroke="#1E3F8A" stroke-width="1.6">
+                <path d="M0 16a16 16 0 0 1 32 0M5 16a11 11 0 0 1 22 0M10 16a6 6 0 0 1 12 0"/>
+                <path d="M-16 32a16 16 0 0 1 32 0M-11 32a11 11 0 0 1 22 0M-6 32a6 6 0 0 1 12 0"/>
+                <path d="M16 32a16 16 0 0 1 32 0M21 32a11 11 0 0 1 22 0M26 32a6 6 0 0 1 12 0"/>
+              </g>
+            </pattern>
+            <clipPath id="body"><path d="M52 118h116l-7 190a14 14 0 0 1-14 13H73a14 14 0 0 1-14-13z"/></clipPath>
+            <g id="s">
+              <rect x="-5" y="0" width="10" height="170" rx="2" fill="#D9BE85" stroke="#AE8F52"/>
+              <rect x="-5" y="0" width="10" height="16" rx="2" fill="#BE3528"/>
+            </g>
+          </defs>
+          <g id="chosen">
+            <use href="#s" transform="translate(110 -6)"/>
+            <text id="chosenLabel" x="110" y="42" text-anchor="middle" fill="#14295E" font-size="9" font-weight="700"></text>
+          </g>
+          <g transform="rotate(-13 110 120) translate(82 -6)"><use class="stick" style="--i:0" href="#s"/></g>
+          <g transform="rotate(-8 110 120) translate(92 16)"><use class="stick" style="--i:3" href="#s"/></g>
+          <g transform="rotate(-4 110 120) translate(100 -14)"><use class="stick" style="--i:1" href="#s"/></g>
+          <g transform="rotate(4 110 120) translate(120 8)"><use class="stick" style="--i:4" href="#s"/></g>
+          <g transform="rotate(8 110 120) translate(128 -12)"><use class="stick" style="--i:2" href="#s"/></g>
+          <g transform="rotate(13 110 120) translate(138 12)"><use class="stick" style="--i:5" href="#s"/></g>
+          <path d="M52 118h116l-7 190a14 14 0 0 1-14 13H73a14 14 0 0 1-14-13z" fill="#F8FBFC" stroke="#1E3F8A" stroke-width="2.5"/>
+          <g clip-path="url(#body)">
+            <rect x="40" y="258" width="140" height="70" fill="url(#wave)"/>
+            <path d="M46 132h128M46 138h128M46 252h128M46 258h128" stroke="#1E3F8A" stroke-width="2"/>
+          </g>
+          <circle cx="110" cy="195" r="42" fill="none" stroke="#1E3F8A" stroke-width="2.5"/>
+          <circle cx="110" cy="195" r="36" fill="none" stroke="#1E3F8A"/>
+          <text x="110" y="212" text-anchor="middle" fill="#1E3F8A" font-size="46" font-weight="700" style="font-family:var(--kai)">签</text>
+          <ellipse cx="110" cy="118" rx="58" ry="8" fill="none" stroke="#1E3F8A" stroke-width="2.5"/>
+        </svg>
+      </button>
+      <div class="title">
+        <h1>廿四节气签</h1>
+        <p>一日一问 一事一签</p>
+      </div>
+    </div>
+
+    <form id="askForm" class="fields">
+      <div class="field">
+        <label for="name">怎么称呼你</label>
+        <input id="name" type="text" maxlength="8" autocomplete="off" placeholder="名字或外号,不写也行">
+      </div>
+      <fieldset class="field">
+        <legend>想问什么</legend>
+        <div id="topics" class="chips"></div>
+      </fieldset>
+      <button id="shake" class="btn primary" type="submit">
+        <span id="shakeText">摇一下</span>
+        <span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </button>
+    </form>
+    <p class="fine">摇三下出签。同一天问同一件事,签不会变。<br>名字只用来算签,不会上传。</p>
+  </section>
+
+  <section id="result" class="scene" aria-label="签文" hidden>
+    <article id="slip" class="slip"></article>
+    <div class="actions">
+      <button id="save" class="btn primary" type="button">存成图片</button>
+      <button id="pass" class="btn" type="button">发给下一位</button>
+      <button id="again" class="btn" type="button">换个问题</button>
+    </div>
+    <p id="linkbox" hidden></p>
+    <p class="fine">图个开心,当不得真。大事还请自己拿主意。</p>
+  </section>
+</main>
+
+<div id="sheet" role="dialog" aria-label="签图" hidden>
+  <img id="sheetImg" alt="">
+  <p>手机上长按图片保存或转发,电脑上右键另存。</p>
+  <button id="sheetClose" class="btn" type="button">收起</button>
+</div>
+
+<script>
+const SIGNS = [
+  { t: '立春', lv: '上吉', c: '#47701F', cn: '柳绿', poem: ['东风昨夜过池东', '解尽层冰不费功', '莫嫌枝上春犹浅', '一点新黄已不同'],
+    gloss: '事情刚有起色,别急着看结果。变化已经开始,只是还小。',
+    work: '新念头值得试,先做个小版本。', money: '小钱进账,不算多,但是个好开头。', love: '有人开始留意你,回复可以再快一点。', body: '早起晒晒太阳,精神会回来。',
+    yi: ['开个头', '换新头像'], ji: ['等万事俱备'] },
+  { t: '雨水', lv: '中吉', c: '#2C7074', cn: '天水碧', poem: ['檐前细细落无声', '润物从来不计程', '且把心田翻一遍', '来时自有绿痕生'],
+    gloss: '眼下看不出进展,但积累正在起作用。不用催,也别停。',
+    work: '这阵子的投入要晚些见效,稳住节奏。', money: '细水长流,小额进账比大钱靠谱。', love: '慢热的关系更耐看,多聊几句日常。', body: '注意保暖,尤其是脚和肩颈。',
+    yi: ['浇花', '整理收藏夹'], ji: ['反复催进度'] },
+  { t: '惊蛰', lv: '上吉', c: '#2F6B4F', cn: '竹青', poem: ['一声雷过地门开', '蛰了三冬此日来', '抖落旧尘伸懒腰', '好戏等你上高台'],
+    gloss: '憋了很久的事可以动了。时机到了就别再观望,先站出来。',
+    work: '适合主动争取,举手比等安排有用。', money: '有一笔机会要你自己开口才有。', love: '想说的话今天说,对方可能也在等。', body: '动起来,久坐的筋骨要松一松。',
+    yi: ['主动开口', '出门走走'], ji: ['继续装睡'] },
+  { t: '春分', lv: '上上', c: '#B53A68', cn: '桃红', poem: ['昼夜均分天地平', '桃花半放最多情', '世间好事多如此', '不早不迟恰好行'],
+    gloss: '各方面都刚刚好,是少见的顺当时刻。不贪多,就能一直顺。',
+    work: '配合默契,事情推得动。', money: '收支平衡还略有余。', love: '两边心意差不多,合适往前走一步。', body: '作息规律,状态在线。',
+    yi: ['做决定', '约人见面'], ji: ['贪多求满'] },
+  { t: '清明', lv: '中吉', c: '#2C6E66', cn: '碧山', poem: ['新雨初收山色明', '青团一口念平生', '旧人旧事随风去', '心上轻时步自轻'],
+    gloss: '有件放不下的事可以放了。回头看一眼就好,继续往前走。',
+    work: '把旧项目收个尾,腾出手做新的。', money: '清一清旧账,该收的收,该还的还。', love: '和过去和解,新的缘分才进得来。', body: '踏青走路,多吸点新鲜空气。',
+    yi: ['给长辈打电话', '断舍离'], ji: ['翻旧聊天记录'] },
+  { t: '谷雨', lv: '上吉', c: '#A12F5E', cn: '牡丹', poem: ['一犁好雨到田家', '谷种新抽浅浅芽', '更待三朝晴日好', '阶前看取牡丹花'],
+    gloss: '条件都齐了,再等几天就见分晓。这段时间把准备做足。',
+    work: '前期铺垫开始有回应。', money: '种下的有收成,别提前挖出来看。', love: '花期将至,打扮一下再出门。', body: '祛祛湿气,少喝冰饮。',
+    yi: ['开始新计划', '添置绿植'], ji: ['拔苗助长'] },
+  { t: '立夏', lv: '中吉', c: '#A82A38', cn: '樱桃', poem: ['绿阴初合小楼西', '梅子青青燕子低', '白昼渐长须用足', '莫教午睡误归期'],
+    gloss: '时间比你以为的多,但也经不起浪费。把最重要的事排在上午。',
+    work: '长线任务今天推进最划算。', money: '天一热就想下单,先放购物车冷静三天。', love: '傍晚散步比咖啡店更容易聊开。', body: '午睡二十分钟就够,别睡到天黑。',
+    yi: ['列计划', '吃梅子'], ji: ['午睡过头'] },
+  { t: '小满', lv: '上上', c: '#816114', cn: '麦黄', poem: ['麦粒初盈未肯黄', '江河半满水悠长', '人生好处休全满', '留点余甘慢慢尝'],
+    gloss: '现在的状态就是最好的状态。有余地,有盼头,别急着到顶。',
+    work: '进度七八成,正是最顺手的时候。', money: '够用还有余,这就是富。', love: '有点距离的喜欢最甜。', body: '吃到七分饱,比什么补品都好。',
+    yi: ['知足', '请朋友吃饭'], ji: ['把话说满'] },
+  { t: '芒种', lv: '小吉', c: '#4B6E22', cn: '秧绿', poem: ['布谷声中汗满衫', '抢收抢种莫迟延', '今朝多插一行秧', '来日仓中多几餐'],
+    gloss: '这阵子是忙的命,但忙得值。手上的事今天就办,别往后拖。',
+    work: '活多,但件件算数,先清截止日最近的。', money: '辛苦钱,赚得踏实。', love: '再忙也回一句消息。', body: '腰背吃紧,干一小时起来动动。',
+    yi: ['清待办', '早点开工'], ji: ['说“明天再说”'] },
+  { t: '夏至', lv: '上吉', c: '#B23A22', cn: '榴花', poem: ['日到天中影最微', '榴花照眼火初飞', '趁他白昼长如许', '该走的路走到黑'],
+    gloss: '运势到了高点,想做的事可以放手做。高点之后会转,所以别拖。',
+    work: '你说的话今天有分量,重要提案放在这几天。', money: '有进账,但手头一松也容易花掉。', love: '热烈直接比欲言又止好。', body: '防晒补水,别在大中午硬扛。',
+    yi: ['全力以赴', '吃西瓜'], ji: ['正午跑步'] },
+  { t: '小暑', lv: '平', c: '#2E7262', cn: '荷叶', poem: ['温风初至蝉声稠', '一室蒸腾懒上楼', '且向竹阴寻半榻', '事来不必急回头'],
+    gloss: '有点闷,有点烦,但都不是大事。降降温,先别做决定。',
+    work: '容易和人杠上,回消息前喝口水。', money: '平平,不亏就算赚。', love: '要吵架也别挑大热天。', body: '心静自然凉,也记得开空调。',
+    yi: ['喝绿豆汤', '晚点再回'], ji: ['上头'] },
+  { t: '大暑', lv: '中吉', c: '#87570A', cn: '赤金', poem: ['赤日如炉暑未收', '荷风一缕抵千秋', '熬过此关凉便至', '蝉声尽处是新秋'],
+    gloss: '现在是最难的一段,也是快过去的一段。撑过这几天,局面就转。',
+    work: '压力到顶,顶过这轮就能喘口气。', money: '开销偏大,忍一阵会回来。', love: '难的时候谁在身边,你要记住。', body: '防中暑,多喝水,别硬撑。',
+    yi: ['吃根冰棍', '放自己半天假'], ji: ['最累时做决定'] },
+  { t: '立秋', lv: '上吉', c: '#5C6A26', cn: '梧桐', poem: ['一叶飘来暑渐消', '梧桐影里晚风饶', '田中已透新禾气', '不日金黄满陌郊'],
+    gloss: '转机已经出现,虽然还没到手。方向对了,继续沿着走。',
+    work: '之前的付出开始被看见。', money: '收成的苗头出现了,再等等。', love: '从热闹转为踏实,是好事。', body: '贴秋膘适可而止。',
+    yi: ['吃顿好的', '复盘上半年'], ji: ['提前庆功'] },
+  { t: '处暑', lv: '小吉', c: '#38706C', cn: '青瓷', poem: ['三伏到头云渐舒', '晚来凉意入窗疏', '案前积压从头理', '一件一件慢慢除'],
+    gloss: '最累的阶段过了,可以喘口气。把前阵子堆着的事理一理。',
+    work: '适合收尾和归档,新摊子先别开。', money: '对一下账,会翻出忘掉的小钱。', love: '冷下来不是变淡,是该好好说话了。', body: '早晚温差大,睡觉盖好肚子。',
+    yi: ['收拾桌面', '退掉不看的会员'], ji: ['同时开新坑'] },
+  { t: '白露', lv: '中吉', c: '#3F6685', cn: '月魄', poem: ['草头一夜缀明珠', '日出风来转瞬无', '好意当前须接住', '回头再找已模糊'],
+    gloss: '机会很小也很短,看到就抓。细节里有东西,别漏看。',
+    work: '一条不起眼的消息可能有用,认真读。', money: '优惠和报销都有期限,今天看一眼。', love: '对方递来的小台阶,接住就好。', body: '换季鼻子先知道,添件薄外套。',
+    yi: ['回消息', '查截止日期'], ji: ['已读不回'] },
+  { t: '秋分', lv: '上上', c: '#99500C', cn: '丹桂', poem: ['金风吹满桂花天', '昼夜停匀月正圆', '春种秋收皆有数', '这回轮你数丰年'],
+    gloss: '该来的收获都会来,而且分量刚好。大胆收下,这是你应得的。',
+    work: '成果落地,可以谈回报了。', money: '有回报到账的兆头。', love: '圆满之象,见家人、定下来都合适。', body: '气色好,吃好睡好。',
+    yi: ['谈加薪', '和家人吃饭'], ji: ['过分谦虚'] },
+  { t: '寒露', lv: '小吉', c: '#9C3526', cn: '枫丹', poem: ['露冷枫丹入晚秋', '雁行南去不回头', '路遥且把衣添厚', '独往长天也自由'],
+    gloss: '这段路可能得一个人走,走慢一点也没关系。准备充分比人多更重要。',
+    work: '别等别人拍板,自己先把事情往前挪。', money: '省着点,为过冬留余粮。', love: '一个人也过得好,才遇得到对的人。', body: '脚踝别露着,秋裤提上日程。',
+    yi: ['添衣', '独处半天'], ji: ['勉强合群'] },
+  { t: '霜降', lv: '中吉', c: '#AE4A1C', cn: '柿红', poem: ['一夜微霜柿子红', '枝头挂满小灯笼', '从来好味须经冷', '甜处都从涩处通'],
+    gloss: '最近受的那点冷遇不白受。它正在让你变得更有滋味。',
+    work: '被挑剔说明有人在看,改完会更好。', money: '先省后松,月底比月初宽裕。', love: '磨合期的别扭,过去就是默契。', body: '吃柿子别空腹。',
+    yi: ['吃柿子', '听听批评'], ji: ['玻璃心'] },
+  { t: '立冬', lv: '平', c: '#38566A', cn: '苍青', poem: ['水始成冰地始封', '万般收拾入仓中', '闭门且作深根计', '不与寒枝争北风'],
+    gloss: '现在不是出手的时候。把手上的守好,把自己养好。',
+    work: '少冒进,把基本功和资料备齐。', money: '守住就行,少动大钱。', love: '不用轰轰烈烈,一起吃顿热饭就好。', body: '进补不如早睡,饺子可以多吃一个。',
+    yi: ['吃饺子', '囤过冬的东西'], ji: ['裸辞'] },
+  { t: '小雪', lv: '小吉', c: '#53626F', cn: '霜灰', poem: ['初雪如盐落未成', '小炉新火一壶清', '寒天最好邀人坐', '几句闲谈暖到明'],
+    gloss: '外面冷,人情暖。这阵子运气在朋友身上,多和人待在一起。',
+    work: '同事之间一句话,胜过自己闷头想。', money: '平稳,请客的钱花得值。', love: '约喝点热的,气氛自己会来。', body: '腌腊少吃,清淡一点。',
+    yi: ['约朋友', '煮一壶茶'], ji: ['一个人生闷气'] },
+  { t: '大雪', lv: '中吉', c: '#2E3D5C', cn: '玄青', poem: ['大雪封山路未通', '闭门围火读书中', '今冬积得三尺厚', '来岁田间麦必丰'],
+    gloss: '外部条件不好,就转向内功。这段时间的积累,明年都用得上。',
+    work: '学点新东西,明年就有用。', money: '眼下紧,但打下的底子厚。', love: '距离远些也无妨,写点长一点的话。', body: '出门防滑,手脚保暖。',
+    yi: ['读书', '学个新技能'], ji: ['抱怨环境'] },
+  { t: '冬至', lv: '上吉', c: '#9D2933', cn: '胭脂', poem: ['长夜今宵到尽头', '一阳初动地中抽', '从今日影添一线', '低处已过是上游'],
+    gloss: '最低点就是现在,或者已经过去了。接下来每天都比昨天好一点。',
+    work: '谷底反弹,稳稳往上。', money: '紧的日子快到头了。', love: '有人等你回家吃饭,或者,快了。', body: '吃碗热的,力气慢慢回来。',
+    yi: ['吃汤圆或饺子', '给家人打电话'], ji: ['灰心'] },
+  { t: '小寒', lv: '慎', c: '#7E5A10', cn: '蜡梅', poem: ['冷在三九未到时', '路滑霜重少人知', '近来诸事皆须慎', '酒后微信莫发之'],
+    gloss: '这支签提醒你小心,不是真有什么坏事。说话、花钱、走路,都慢半拍。',
+    work: '发出去前再读一遍,尤其是群消息。', money: '大额消费先放一放,陌生链接别点。', love: '别翻旧账,也别半夜发小作文。', body: '路滑防摔,不舒服就去看医生。',
+    yi: ['多穿一件', '手机静音'], ji: ['酒后发微信'] },
+  { t: '大寒', lv: '上上', c: '#33383F', cn: '松烟', poem: ['岁末冰封万木凋', '一枝梅动最高梢', '寒深已是春来处', '门外东风已过桥'],
+    gloss: '一轮走到头,新一轮已经等在门口。好运在路上,把门打开就行。',
+    work: '旧阶段收官,新机会已有消息。', money: '年底见喜,备好红包。', love: '有人正朝你走来,这回别错过。', body: '御寒进补,养足精神过年。',
+    yi: ['大扫除', '写新年愿望'], ji: ['提前泄气'] },
+];
+
+const TOPICS = { general: '今日运势', work: '事业学业', money: '财运', love: '感情', body: '身体' };
+const READS = [['work', '事业'], ['money', '财运'], ['love', '感情'], ['body', '身体']];
+const HOURS = [['子时', '23–1点'], ['丑时', '1–3点'], ['寅时', '3–5点'], ['卯时', '5–7点'], ['辰时', '7–9点'], ['巳时', '9–11点'], ['午时', '11–13点'], ['未时', '13–15点'], ['申时', '15–17点'], ['酉时', '17–19点'], ['戌时', '19–21点'], ['亥时', '21–23点']];
+const WAYS = ['正东', '东南', '正南', '西南', '正西', '西北', '正北', '东北'];
+const SERIF = '"Songti SC", "STSong", "Noto Serif CJK SC", "Source Han Serif SC", "Noto Serif SC", "SimSun", serif';
+const KAI = '"Kaiti SC", "STKaiti", "KaiTi", "BiauKai", ' + SERIF;
+const DEFAULT_NAME = '有缘人';
+const NAME_KEY = 'jieqi-qian-name';
+
+const $ = id => document.getElementById(id);
+const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+// 只有直接打开的网页才有可转发的真实地址,嵌在别的页面里时拿到的是框架地址
+const canLink = window.self === window.top && /^https?:$/.test(location.protocol);
+const dots = [...document.querySelectorAll('.dots i')];
+let count = 0, drawing = false, current = null;
+
+function hash(s) {
+  let h = 2166136261;
+  for (const ch of s) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619); }
+  h ^= h >>> 13; h = Math.imul(h, 0x5bd1e995); h ^= h >>> 15;
+  return h >>> 0;
+}
+
+function cn(n) {
+  const d = '〇一二三四五六七八九';
+  if (n <= 10) return n === 10 ? '十' : d[n];
+  if (n < 20) return '十' + d[n - 10];
+  return d[Math.floor(n / 10)] + '十' + (n % 10 ? d[n % 10] : '');
+}
+
+function pick(name, topic, now) {
+  const day = `${now.getFullYear()}-${now.getMonth() + 1}-${now.getDate()}`;
+  const seed = `${name}|${topic}|${day}`;
+  const i = hash(seed) % SIGNS.length;
+  return {
+    i, sign: SIGNS[i], name, topic,
+    date: `${cn(now.getMonth() + 1)}月${cn(now.getDate())}日`,
+    hour: HOURS[hash(seed + '时') % 12],
+    way: WAYS[hash(seed + '方') % 8],
+    num: hash(seed + '数') % 9 + 1,
+  };
+}
+
+function pale(hex) {
+  const v = parseInt(hex.slice(1), 16), mix = c => Math.round(c + (255 - c) * .86);
+  return `rgb(${mix(v >> 16 & 255)},${mix(v >> 8 & 255)},${mix(v & 255)})`;
+}
+
+function el(tag, cls, text) {
+  const n = document.createElement(tag);
+  if (cls) n.className = cls;
+  if (text != null) n.textContent = text;
+  return n;
+}
+
+function clack() {
+  try {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) return;
+    clack.ctx = clack.ctx || new AC();
+    const ac = clack.ctx, t = ac.currentTime;
+    if (ac.state === 'suspended') ac.resume();
+    for (let i = 0; i < 5; i++) {
+      const o = ac.createOscillator(), g = ac.createGain(), s = t + i * .05 + Math.random() * .02;
+      o.type = 'square';
+      o.frequency.value = 1300 + Math.random() * 1700;
+      g.gain.setValueAtTime(.04, s);
+      g.gain.exponentialRampToValueAtTime(.001, s + .035);
+      o.connect(g); g.connect(ac.destination);
+      o.start(s); o.stop(s + .04);
+    }
+  } catch (e) {}
+}
+
+function shake() {
+  if (drawing) return;
+  count++;
+  dots.forEach((d, i) => d.classList.toggle('on', i < count));
+  $('shakeText').textContent = ['摇一下', '再摇两下', '最后一下', '出签了'][count];
+  clack();
+  try { navigator.vibrate && navigator.vibrate(30); } catch (e) {}
+  const tube = $('tube');
+  tube.classList.remove('shaking');
+  void tube.getBoundingClientRect();
+  tube.classList.add('shaking');
+  if (count >= 3) draw();
+}
+
+function draw() {
+  drawing = true;
+  const name = $('name').value.trim() || DEFAULT_NAME;
+  const topic = document.querySelector('input[name="topic"]:checked').value;
+  current = pick(name, topic, new Date());
+  try { if (name !== DEFAULT_NAME) localStorage.setItem(NAME_KEY, name); } catch (e) {}
+  const label = $('chosenLabel');
+  label.textContent = '';
+  [...current.sign.t].forEach((ch, i) => {
+    const t = document.createElementNS(label.namespaceURI, 'tspan');
+    t.setAttribute('x', 110);
+    t.setAttribute('dy', i ? 10 : 0);
+    t.textContent = ch;
+    label.append(t);
+  });
+  setTimeout(() => $('tube').classList.add('drawn'), reduced ? 0 : 460);
+  setTimeout(() => show(current), reduced ? 0 : 1550);
+}
+
+function show(r) {
+  const s = r.sign, slip = $('slip');
+  document.documentElement.style.setProperty('--term', s.c);
+  document.documentElement.style.setProperty('--term-pale', pale(s.c));
+  slip.textContent = '';
+  slip.classList.remove('reveal');
+
+  const head = el('div', 'slip-head');
+  head.append(el('b', '', `第${cn(r.i + 1)}签`), el('div', s.lv.length > 1 ? 'seal wide' : 'seal', s.lv));
+
+  const verse = el('div', 'verse');
+  const poem = el('div', 'poem');
+  s.poem.forEach((line, i) => {
+    const p = el('p', '', line);
+    p.style.setProperty('--i', i);
+    poem.append(p);
+  });
+  const who = el('p', 'who');
+  who.append(el('span', '', r.name), el('span', '', `${r.date} 问${TOPICS[r.topic]}`));
+  verse.append(el('h2', 'term', s.t), poem, who);
+
+  const reads = el('dl', 'reads');
+  const order = READS.slice().sort((a, b) => (b[0] === r.topic) - (a[0] === r.topic));
+  order.forEach(([k, label]) => {
+    const row = el('div', k === r.topic ? 'read asked' : 'read');
+    row.append(el('dt', '', label), el('dd', '', s[k]));
+    reads.append(row);
+  });
+
+  const omens = el('div', 'omens');
+  [['yi', '宜', s.yi], ['ji', '忌', s.ji]].forEach(([cls, label, items]) => {
+    const box = el('div', 'omen ' + cls), ul = el('ul');
+    items.forEach(t => ul.append(el('li', '', t)));
+    box.append(el('b', '', label), ul);
+    omens.append(box);
+  });
+
+  const luck = el('dl', 'luck');
+  const cell = (label, value, note, swatch) => {
+    const d = el('div'), dd = el('dd');
+    if (swatch) dd.append(el('i', 'swatch'));
+    dd.append(document.createTextNode(value));
+    if (note) dd.append(el('small', '', note));
+    d.append(el('dt', '', label), dd);
+    luck.append(d);
+  };
+  cell('吉时', r.hour[0], r.hour[1]);
+  cell('吉方', r.way, '向这边走走');
+  cell('吉数', cn(r.num), `${r.num}`);
+  cell('本色', s.cn, s.t, true);
+
+  slip.append(head, verse, el('p', 'gloss', s.gloss), reads, omens, luck);
+  $('ask').hidden = true;
+  $('result').hidden = false;
+  $('pass').hidden = !canLink;
+  $('linkbox').hidden = true;
+  window.scrollTo(0, 0);
+  void slip.getBoundingClientRect();
+  slip.classList.add('reveal');
+}
+
+function reset() {
+  count = 0; drawing = false;
+  dots.forEach(d => d.classList.remove('on'));
+  $('shakeText').textContent = '摇一下';
+  $('tube').classList.remove('drawn', 'shaking');
+  $('result').hidden = true;
+  $('ask').hidden = false;
+  document.documentElement.style.removeProperty('--term');
+  document.documentElement.style.removeProperty('--term-pale');
+  window.scrollTo(0, 0);
+}
+
+function wrap(x, text, width) {
+  const lines = [];
+  let line = '';
+  for (const ch of text) {
+    if (x.measureText(line + ch).width > width && line) { lines.push(line); line = ''; }
+    line += ch;
+  }
+  if (line) lines.push(line);
+  return lines;
+}
+
+function renderImage(r) {
+  const s = r.sign, W = 1080, M = 96, inner = W - M * 2, ink = '#1A2740', mute = '#56657E';
+  const probe = document.createElement('canvas').getContext('2d');
+  const asked = r.topic === 'general' ? READS : READS.filter(a => a[0] === r.topic);
+
+  // 先量高度:解曰和各条解读的行数随文字长短变化
+  probe.font = `42px ${SERIF}`;
+  const gloss = wrap(probe, s.gloss, inner);
+  probe.font = `36px ${SERIF}`;
+  const reads = asked.map(([k, label]) => ({ label, lines: wrap(probe, s[k], inner - 110) }));
+  const top = 860;
+  const H = top + 60 + gloss.length * 64 + 36 + reads.reduce((a, b) => a + b.lines.length * 54 + 18, 0) + 300;
+
+  const cv = document.createElement('canvas');
+  cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  x.fillStyle = pale(s.c); x.fillRect(0, 0, W, H);
+  x.fillStyle = '#F8FBFC'; x.fillRect(40, 40, W - 80, H - 80);
+  x.strokeStyle = s.c;
+  x.lineWidth = 6; x.strokeRect(40, 40, W - 80, H - 80);
+  x.lineWidth = 2; x.strokeRect(56, 56, W - 112, H - 112);
+  x.textBaseline = 'top';
+
+  x.fillStyle = s.c; x.font = `700 44px ${SERIF}`; x.textAlign = 'left';
+  x.fillText(`第${cn(r.i + 1)}签`, M, 100);
+
+  // 朱砂印
+  x.save();
+  x.translate(W - M - 56, 128); x.rotate(-.07);
+  x.fillStyle = '#BE3528'; x.fillRect(-56, -56, 112, 112);
+  x.fillStyle = '#F8FBFC'; x.textAlign = 'center'; x.textBaseline = 'middle';
+  const lv = [...s.lv];
+  x.font = `700 ${lv.length > 1 ? 46 : 70}px ${KAI}`;
+  lv.forEach((ch, i) => x.fillText(ch, 0, lv.length > 1 ? (i - .5) * 48 : 0));
+  x.restore();
+  x.textBaseline = 'top'; x.textAlign = 'center';
+
+  // 竖排:节气在最右,诗句右起,问签人在最左
+  const col = (text, cx, y, size, step) => [...text].forEach((ch, i) => x.fillText(ch, cx, y + i * step));
+  x.fillStyle = s.c; x.font = `700 124px ${KAI}`;
+  col(s.t, W - 170, 240, 124, 150);
+  x.fillStyle = ink; x.font = `400 70px ${KAI}`;
+  s.poem.forEach((line, i) => col(line, W - 340 - i * 130, 220, 70, 86));
+  x.fillStyle = mute; x.font = `32px ${SERIF}`;
+  col([...r.name].slice(0, 8).join(''), 150, 220, 32, 42);
+  col(`${r.date}`, 200, 220, 32, 42);
+
+  x.strokeStyle = s.c; x.lineWidth = 2;
+  x.beginPath(); x.moveTo(M, top); x.lineTo(W - M, top); x.stroke();
+
+  let y = top + 40;
+  x.textAlign = 'left'; x.fillStyle = ink; x.font = `42px ${SERIF}`;
+  gloss.forEach(l => { x.fillText(l, M, y); y += 64; });
+  y += 24;
+  reads.forEach(({ label, lines }) => {
+    x.fillStyle = s.c; x.font = `700 36px ${SERIF}`;
+    x.fillText(label, M, y);
+    x.fillStyle = ink; x.font = `36px ${SERIF}`;
+    lines.forEach(l => { x.fillText(l, M + 110, y); y += 54; });
+    y += 18;
+  });
+  y += 16;
+  x.font = `36px ${SERIF}`;
+  x.fillStyle = s.c; x.fillText('宜', M, y);
+  x.fillStyle = ink; x.fillText(s.yi.join('、'), M + 60, y);
+  x.fillStyle = '#BE3528'; x.fillText('忌', W / 2 + 20, y);
+  x.fillStyle = ink; x.fillText(s.ji.join('、'), W / 2 + 80, y);
+  y += 80;
+  x.fillStyle = mute; x.font = `32px ${SERIF}`;
+  x.fillText(`吉时 ${r.hour[0]}   吉方 ${r.way}   吉数 ${cn(r.num)}   本色 ${s.cn}`, M, y);
+  x.textAlign = 'center'; x.font = `30px ${SERIF}`;
+  x.fillText('廿四节气签 · 图个开心,当不得真', W / 2, H - 112);
+  return cv.toDataURL('image/png');
+}
+
+$('save').addEventListener('click', () => {
+  try {
+    $('sheetImg').src = renderImage(current);
+    $('sheetImg').alt = `第${cn(current.i + 1)}签 ${current.sign.t} ${current.sign.lv}`;
+    $('sheet').hidden = false;
+    $('sheetClose').focus();
+  } catch (e) {
+    $('linkbox').textContent = '图片没有生成成功,直接截图也一样。';
+    $('linkbox').hidden = false;
+  }
+});
+$('sheetClose').addEventListener('click', () => { $('sheet').hidden = true; });
+
+$('pass').addEventListener('click', async () => {
+  const mine = current.name === DEFAULT_NAME ? '' : '?from=' + encodeURIComponent(current.name);
+  const link = location.origin + location.pathname + mine;
+  const box = $('linkbox');
+  box.hidden = false;
+  try {
+    await navigator.clipboard.writeText(link);
+    box.textContent = '链接已复制,去微信粘贴给朋友。';
+  } catch (e) {
+    box.textContent = link;
+    getSelection().selectAllChildren(box);
+  }
+});
+
+$('again').addEventListener('click', reset);
+$('tube').addEventListener('click', shake);
+$('askForm').addEventListener('submit', e => { e.preventDefault(); shake(); });
+
+let lastShake = 0;
+window.addEventListener('devicemotion', e => {
+  const a = e.accelerationIncludingGravity, now = Date.now();
+  if (!a || $('ask').hidden) return;
+  const force = Math.abs(a.x || 0) + Math.abs(a.y || 0) + Math.abs(a.z || 0);
+  if (force > 34 && now - lastShake > 450) { lastShake = now; shake(); }
+}, { passive: true });
+
+Object.entries(TOPICS).forEach(([value, label], i) => {
+  const chip = el('label', 'chip'), input = el('input');
+  input.type = 'radio'; input.name = 'topic'; input.id = 'topic-' + value; input.value = value; input.checked = i === 0;
+  chip.append(input, el('span', '', label));
+  $('topics').append(chip);
+});
+
+try {
+  const saved = localStorage.getItem(NAME_KEY);
+  if (saved) $('name').value = saved;
+} catch (e) {}
+
+const from = [...(new URLSearchParams(location.search).get('from') || '')].slice(0, 8).join('');
+if (from) {
+  $('invite').textContent = `${from} 请你抽一支签`;
+  $('invite').hidden = false;
+}
+</script>
+</body>
+</html>
